@@ -1,13 +1,16 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 interface ProductType {
-  id: number;
+  id: string;
   name: string;
   explanation: string;
   price: number;
 }
+
+type ProductContextType = [ProductType[], React.Dispatch<React.SetStateAction<ProductType[]>>];
+
 // Context 정의
-const ProductContext = createContext<ProductType[]>([]);
+const ProductContext = createContext<ProductContextType | null>(null);
 
 const initialValue: ProductType[] = [
   {
@@ -20,11 +23,11 @@ const initialValue: ProductType[] = [
 
 // Provider 정의
 export function ProductProvider({ children }: { children: React.ReactNode }) {
-  return <ProductContext.Provider value={initialValue}>{children}</ProductContext.Provider>;
+  const productState = useState<ProductType[]>(initialValue);
+  return <ProductContext.Provider value={productState}>{children}</ProductContext.Provider>;
 }
 
 // Consumer 정의
-export function useProductContext(): ProductType[] {
-  return useContext(ProductContext);
+export function useProductContext() {
+  return useContext(ProductContext) as ProductContextType;
 }
-// test

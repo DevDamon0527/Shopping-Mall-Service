@@ -1,7 +1,9 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useProductContext } from '../contexts/ProductContext';
 
 interface ProductType {
-  id: number;
+  id: string;
   name: string;
   explanation: string;
   price: number;
@@ -9,7 +11,7 @@ interface ProductType {
 
 interface ProductItemProps {
   product: ProductType;
-  onDelete: (id: number) => void;
+  onDelete: (id: string) => void;
   onUpdate: (product: ProductType) => void;
 }
 
@@ -24,7 +26,9 @@ function ProductItem({ product, onDelete, onUpdate }: ProductItemProps) {
   return (
     <div>
       <div>{id}</div>
-      <div>{name}</div>
+      <div>
+        <Link to={`/${id}`}>{name}</Link>
+      </div>
       <div>{price}</div>
       <div>{explanation}</div>
       {/* #3. 삭제하기 */}
@@ -73,17 +77,16 @@ function ProductItem({ product, onDelete, onUpdate }: ProductItemProps) {
 }
 
 function HomePage() {
-  const [products, setProducts] = useState<ProductType[]>([
-    {
-      id: 0,
-      name: 'Iphone 13 MAX',
-      explanation: '디스플레이 ~',
-      price: 1230000,
-    },
-  ]);
+  const [products, setProducts] = useState<ProductType[]>([]);
   const [name, setName] = useState('');
   const [explanation, setExplanation] = useState('');
   const [price, setPrice] = useState(0);
+
+  useEffect(() => {
+    fetch(`/product`)
+      .then((response) => response.json())
+      .then((data) => setProducts(data.products));
+  }, []);
 
   // #2. 상품 추가시 (ID 값 만들기)
   const fakeId = useRef(0); // 값 저장. 리렌더링 (x)
@@ -99,7 +102,15 @@ function HomePage() {
   };
 
   // #5. 상품 삭제 이벤트 핸들러
-  const handleDelete = (id: number) => setProducts(products.filter((product) => product.id !== id));
+  const handleDelete = (id: string) => {
+    fetch(`/product/${id}`, {
+      method: 'DELETE',
+    }).then((response) => {
+      if (response.ok) {
+        setProducts(products.filter((product) => product.id !== id));
+      }
+    });
+  };
 
   // #6. 수정하기 업데이트 이벤트 핸들러 (업데이트 로직)
   const handleUpdate = (updateProduct: {

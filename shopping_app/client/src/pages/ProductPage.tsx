@@ -1,14 +1,35 @@
-import { log } from 'node:console';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { useProductContext } from '../contexts/ProductContext';
+
+type ProductType = {
+  id: number;
+  name: string;
+  explanation: string;
+  price: number;
+};
 
 function ProductPage() {
-  const params = useParams();
+  const { productId } = useParams<{ productId: string }>();
+  const [product, setProduct] = useState<ProductType | null>(null);
 
   useEffect(() => {
-    console.log(params);
-  });
-  return <h1>상품 상세 페이지</h1>;
+    fetch(`/product/${productId}`)
+      .then((response) => response.json())
+      .then((data) => setProduct(data.product));
+  }, [productId]);
+
+  if (!product) {
+    return <h1>찾으시는 상품이 없습니다.</h1>;
+  }
+
+  return (
+    <div>
+      <h1>{product?.name}</h1>
+      <p>{product?.explanation}</p>
+      <span>{product?.price}</span>
+    </div>
+  );
 }
 
 export default ProductPage;
