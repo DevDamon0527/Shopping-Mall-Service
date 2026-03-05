@@ -110,8 +110,20 @@ function HomePage() {
     });
   };
 
-  const handleUpdate = (updated: ProductType) => {
-    setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
+  const handleUpdate = (updateProduct: ProductType) => {
+    fetch(`/product/${updateProduct.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updateProduct),
+    }).then((response) => {
+      if (response.ok) {
+        setProducts(
+          products.map((product) => (product.id === updateProduct.id ? updateProduct : product)),
+        );
+      }
+    });
   };
 
   return (
