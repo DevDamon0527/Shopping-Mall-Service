@@ -13,20 +13,18 @@ function ProductPage() {
   const [product, setProduct] = useState<ProductType | null>(null);
 
   useEffect(() => {
-    if (!productId) return;
-
     fetch(`/product/${productId}`)
       .then((response) => response.json())
-      .then((data) => setProduct(data.product as ProductType));
+      .then((data) => setProduct(data.product));
   }, [productId]);
 
   if (!product) return <h1>찾으시는 상품이 없습니다.</h1>;
 
   return (
     <div>
-      <h1>{product.name}</h1>
-      <p>{product.explanation}</p>
-      <span>{product.price}</span>
+      <h1>{product?.name}</h1>
+      <p>{product?.explanation}</p>
+      <span>{product?.price}</span>
     </div>
   );
 }

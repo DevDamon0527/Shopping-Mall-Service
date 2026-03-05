@@ -88,13 +88,18 @@ function HomePage() {
       .then((data) => setProducts(data.products as ProductType[]));
   }, []);
 
-  const fakeId = useRef(0);
-
   const handleCreate = (newProduct: Omit<ProductType, 'id'>) => {
-    fakeId.current += 1;
-    const created: ProductType = { ...newProduct, id: String(fakeId.current) };
-
-    setProducts((prev) => [created, ...prev]);
+    fetch('/product', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newProduct),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setProducts((prev) => [...prev, data.product]);
+      });
   };
 
   const handleDelete = (id: string) => {
