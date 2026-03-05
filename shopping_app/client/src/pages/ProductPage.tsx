@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useProductContext } from '../contexts/ProductContext';
 
 type ProductType = {
-  id: number;
+  id: string;
   name: string;
   explanation: string;
   price: number;
@@ -14,20 +13,20 @@ function ProductPage() {
   const [product, setProduct] = useState<ProductType | null>(null);
 
   useEffect(() => {
+    if (!productId) return;
+
     fetch(`/product/${productId}`)
       .then((response) => response.json())
-      .then((data) => setProduct(data.product));
+      .then((data) => setProduct(data.product as ProductType));
   }, [productId]);
 
-  if (!product) {
-    return <h1>찾으시는 상품이 없습니다.</h1>;
-  }
+  if (!product) return <h1>찾으시는 상품이 없습니다.</h1>;
 
   return (
     <div>
-      <h1>{product?.name}</h1>
-      <p>{product?.explanation}</p>
-      <span>{product?.price}</span>
+      <h1>{product.name}</h1>
+      <p>{product.explanation}</p>
+      <span>{product.price}</span>
     </div>
   );
 }

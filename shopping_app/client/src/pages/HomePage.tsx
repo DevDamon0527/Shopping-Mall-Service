@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useProductContext } from '../contexts/ProductContext';
 
 interface ProductType {
   id: string;
@@ -15,13 +14,12 @@ interface ProductItemProps {
   onUpdate: (product: ProductType) => void;
 }
 
-//  #4. 상품 수정하기
 function ProductItem({ product, onDelete, onUpdate }: ProductItemProps) {
   const { id, name, price, explanation } = product;
-  const [isEditMode, setIsEditMode] = useState(false); // 토글 버튼
-  const [editName, setEditName] = useState(product.name);
-  const [editExplanation, setEditExplanantion] = useState(product.explanation);
-  const [editPrice, setEditPrice] = useState(product.price);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editName, setEditName] = useState(name);
+  const [editExplanation, setEditExplanantion] = useState(explanation);
+  const [editPrice, setEditPrice] = useState(price);
 
   return (
     <div>
@@ -31,14 +29,15 @@ function ProductItem({ product, onDelete, onUpdate }: ProductItemProps) {
       </div>
       <div>{price}</div>
       <div>{explanation}</div>
-      {/* #3. 삭제하기 */}
+
       <button type="button" onClick={() => onDelete(id)}>
         삭제하기
       </button>
-      {/* #4. 삭제하기 */}
+
       <button type="button" onClick={() => setIsEditMode((prev) => !prev)}>
         수정하기
       </button>
+
       {isEditMode && (
         <form
           onSubmit={(event) => {
@@ -49,6 +48,7 @@ function ProductItem({ product, onDelete, onUpdate }: ProductItemProps) {
               price: editPrice,
               explanation: editExplanation,
             });
+            setIsEditMode(false);
           }}
         >
           <input
@@ -67,7 +67,7 @@ function ProductItem({ product, onDelete, onUpdate }: ProductItemProps) {
             type="number"
             placeholder="상품 가격"
             value={editPrice}
-            onChange={(event) => setEditPrice(parseInt(event.target.value, 10))}
+            onChange={(event) => setEditPrice(Number(event.target.value))}
           />
           <input type="submit" value="상품 수정하기" />
         </form>
@@ -83,58 +83,38 @@ function HomePage() {
   const [price, setPrice] = useState(0);
 
   useEffect(() => {
-    fetch(`/product`)
+    fetch('/product')
       .then((response) => response.json())
-      .then((data) => setProducts(data.products));
+      .then((data) => setProducts(data.products as ProductType[]));
   }, []);
 
-  // #2. 상품 추가시 (ID 값 만들기)
-  const fakeId = useRef(0); // 값 저장. 리렌더링 (x)
+  const fakeId = useRef(0);
+
   const handleCreate = (newProduct: Omit<ProductType, 'id'>) => {
     fakeId.current += 1;
-    setProducts([
-      ...products,
-      {
-        ...newProduct,
-        id: fakeId.current,
-      },
-    ]);
+    const created: ProductType = { ...newProduct, id: String(fakeId.current) };
+
+    setProducts((prev) => [created, ...prev]);
   };
 
-  // #5. 상품 삭제 이벤트 핸들러
   const handleDelete = (id: string) => {
-    fetch(`/product/${id}`, {
-      method: 'DELETE',
-    }).then((response) => {
+    fetch(`/product/${id}`, { method: 'DELETE' }).then((response) => {
       if (response.ok) {
-        setProducts(products.filter((product) => product.id !== id));
+        setProducts((prev) => prev.filter((product) => product.id !== id));
       }
     });
   };
 
-  // #6. 수정하기 업데이트 이벤트 핸들러 (업데이트 로직)
-  const handleUpdate = (updateProduct: {
-    id: number;
-    name: string;
-    explanation: string;
-    price: number;
-  }) => {
-    setProducts(
-      products.map((product) => (product.id === updateProduct.id ? updateProduct : product)),
-    );
+  const handleUpdate = (updated: ProductType) => {
+    setProducts((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
   };
 
   return (
     <>
-      {/* #1. 상품 추가하기. */}
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          handleCreate({
-            name,
-            explanation,
-            price,
-          });
+          handleCreate({ name, explanation, price });
         }}
       >
         <input
@@ -148,15 +128,12 @@ function HomePage() {
           placeholder="상품 설명"
         />
         <input
-          onChange={(event) => setPrice(parseInt(event.target.value, 10))}
+          onChange={(event) => setPrice(Number(event.target.value))}
           type="number"
           placeholder="상품 가격"
         />
         <input type="submit" value="상품 만들기" />
       </form>
-      {/* products 상태를 화면에 표시. (map 메서드 배열 렌더링) */}
-      {/* 각 상품 요소를 리액트 엘리먼트로 변환시켜 새로운 배열을 만드는 것. */}
-      {/* 고유한 키 값 (key value) 전달 */}
 
       {products.map((product) => (
         <ProductItem

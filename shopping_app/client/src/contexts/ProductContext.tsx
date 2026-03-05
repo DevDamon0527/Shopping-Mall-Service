@@ -1,7 +1,7 @@
 import { createContext, useContext, useState } from 'react';
 
 interface ProductType {
-  id: string;
+  id: number;
   name: string;
   explanation: string;
   price: number;
